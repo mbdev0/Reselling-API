@@ -9,8 +9,10 @@ class UserCreation(UserBase):
 
 class User(UserBase):
     user_id: int
-    shoe_storage_id: int
-    flips_storage_id: int
+    storage_id: int
+
+    class Config:
+        orm_mode=True
 
 class StorageBase(BaseModel):
     flips_storage: Json
@@ -20,6 +22,9 @@ class StorageCreation(StorageBase):
     pass
 
 class Storage(StorageBase):
-    user_id:int
     storage_id:int
+    user_id:int
+
+    class Config:
+        orm_mode=True
 
