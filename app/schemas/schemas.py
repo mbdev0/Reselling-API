@@ -1,4 +1,4 @@
-from pydantic import BaseModel, Json
+from pydantic import BaseModel, Json, validator
 
 class UserBase(BaseModel):
     username: str 
@@ -7,9 +7,23 @@ class UserCreation(UserBase):
     email:str
     password:str
 
+    class Config:
+        orm_mode=True
+
+# To be used later
+    # @validator('email')
+    # def check_none_email(cls,c):
+    #     if c is None:
+    #         raise ValueError('Email = None')
+    #     return c
+    
+    # @validator('password')
+    # def check_none_pass(cls,c):
+    #     if c is None:
+    #         raise ValueError('Pass is none')
+            
 class User(UserBase):
-    user_id: int
-    storage_id: int
+    userid: int
 
     class Config:
         orm_mode=True
