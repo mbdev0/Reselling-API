@@ -3,7 +3,7 @@ from pydantic import BaseModel, Json, validator
 class UserBase(BaseModel):
     username: str 
     email:str
-    
+  
 class UserCreation(UserBase):
     password:str
 
