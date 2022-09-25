@@ -33,4 +33,8 @@ def get_all_users(db:Session = Depends(interact_db)):
 def get_user_by_id(user_id:int, db: Session = Depends(interact_db)):
     return crud.get_user_by_id(user_id=user_id, db=db)
 
+@app.patch('/user/{user_id}', response_model=schemas.User)
+def update_user(user_id: int, user: schemas.User, db: Session = Depends(interact_db)):
+    return crud.update_user(user_id=user_id, user=user, db=db)
+
 
