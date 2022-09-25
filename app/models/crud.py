@@ -3,8 +3,7 @@ from sqlalchemy.orm import Session
 from models.object_models import User, Storage
 from typing import List
 from fastapi import HTTPException
-
-
+from fastapi.encoders import jsonable_encoder
 
 """
 For STORAGE
@@ -20,7 +19,7 @@ For STORAGE
     get net profit (resell-retail) for shoe or flips -> or both
 """
 
-def create_storage(user_email:str,db:Session):
+def create_storage(user_email:str,db:Session) -> Storage:
     user = get_user_by_email(user_email=user_email,db=db)
     print(user.userid)
     db_storage = Storage(shoe_storage_space={},flips_storage_space={},userId=user.userid)
@@ -59,7 +58,6 @@ def get_all_users(db:Session) -> List[User]:
     get_users = db.query(User).all()
     if not get_users:
         raise HTTPException(status_code=404, detail = 'No users to be found')
-    
     return get_users
 
 def create_user(user:schemas.UserCreation, db:Session) -> dict:
@@ -85,4 +83,19 @@ def create_user(user:schemas.UserCreation, db:Session) -> dict:
     }
 
     return resp
+
+def update_user(user_id:int, db:Session, user:schemas.User):
+    stored_user = get_user_by_id(user_id=user_id, db=db)
+    user_update = user.dict(exclude_unset=True)
+    print(user_update)
+    for key,value in user_update.items():
+        setattr(stored_user,key,value)
+
+    db.add(stored_user)
+    db.commit()
+    db.refresh(stored_user)
+
+    return stored_user
+
+
 
