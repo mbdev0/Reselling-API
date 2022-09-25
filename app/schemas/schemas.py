@@ -1,8 +1,9 @@
 from pydantic import BaseModel, Json, validator
+from typing import Union
 
 class UserBase(BaseModel):
-    username: str 
-    email:str
+    username: Union[str, None] = None
+    email: Union[str, None] = None
   
 class UserCreation(UserBase):
     password:str
@@ -23,7 +24,7 @@ class UserCreation(UserBase):
     #         raise ValueError('Pass is none')
             
 class User(UserBase):
-    userid: int
+    userid: Union[str, None] = None
 
     class Config:
         orm_mode=True
