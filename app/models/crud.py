@@ -3,7 +3,6 @@ from sqlalchemy.orm import Session
 from models.object_models import User, Storage
 from typing import List
 from fastapi import HTTPException
-from fastapi.encoders import jsonable_encoder
 
 """
 For STORAGE
@@ -37,8 +36,8 @@ For USERS
     get user by username x
     a users storage needs to be created on sign up -> show too x
     Get a users storage ID 
-    Update a users email
-    update a users password
+    Update a users email x
+    update a users password x
     delete a user by id
     delete a user by email 
 """
@@ -84,7 +83,7 @@ def create_user(user:schemas.UserCreation, db:Session) -> dict:
 
     return resp
 
-def update_user(user_id:int, db:Session, user:schemas.User):
+def update_user(user_id:int, db:Session, user:schemas.User) -> User:
     stored_user = get_user_by_id(user_id=user_id, db=db)
     user_update = user.dict(exclude_unset=True)
     print(user_update)
@@ -97,5 +96,16 @@ def update_user(user_id:int, db:Session, user:schemas.User):
 
     return stored_user
 
+def delete_user_by_id(user_id: int, db:Session) -> dict:
+    user = get_user_by_id(user_id=user_id, db=db)
+    db.delete(user)
+    db.commit()
 
+    return {'message':f'User with the details: {user.userid}, {user.username}, {user.email}, deleted succesfully'}
 
+def delete_user_by_email(user_email:str, db:Session) -> dict:
+    user = get_user_by_email(user_email=user_email, db=db)
+    db.delete(user)
+    db.commit()
+
+    return {'message':f'User with the details: {user.userid}, {user.username}, {user.email}, deleted succesfully'}
