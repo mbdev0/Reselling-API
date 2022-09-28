@@ -38,8 +38,8 @@ For USERS
     Get a users storage ID 
     Update a users email x
     update a users password x
-    delete a user by id
-    delete a user by email 
+    delete a user by id x
+    delete a user by email x
 """
 def get_user_by_id(user_id:int,db:Session) -> User:
     get_by_id = db.query(User).filter(User.userid==user_id).first()
@@ -86,6 +86,10 @@ def create_user(user:schemas.UserCreation, db:Session) -> dict:
 def update_user(user_id:int, db:Session, user:schemas.User) -> User:
     stored_user = get_user_by_id(user_id=user_id, db=db)
     user_update = user.dict(exclude_unset=True)
+
+    if 'userid' in user_update.keys():
+        db.query(Storage).filter(Storage.userId == user_id).update({Storage.userId: user_update['userid']})
+
     print(user_update)
     for key,value in user_update.items():
         setattr(stored_user,key,value)
