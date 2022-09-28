@@ -21,7 +21,7 @@ For STORAGE
 def create_storage(user_email:str,db:Session) -> Storage:
     user = get_user_by_email(user_email=user_email,db=db)
     print(user.userid)
-    db_storage = Storage(shoe_storage_space={},flips_storage_space={},userId=user.userid)
+    db_storage = Storage(shoe_storage_space={},flips_storage_space={},userid=user.userid)
     db.add(db_storage)
     db.commit()
     db.refresh(db_storage)
@@ -86,11 +86,9 @@ def create_user(user:schemas.UserCreation, db:Session) -> dict:
 def update_user(user_id:int, db:Session, user:schemas.User) -> User:
     stored_user = get_user_by_id(user_id=user_id, db=db)
     user_update = user.dict(exclude_unset=True)
-
     if 'userid' in user_update.keys():
-        db.query(Storage).filter(Storage.userId == user_id).update({Storage.userId: user_update['userid']})
+        db.query(Storage).filter(Storage.userid == user_id).update({Storage.userid: user_update['userid']})
 
-    print(user_update)
     for key,value in user_update.items():
         setattr(stored_user,key,value)
 
@@ -113,3 +111,10 @@ def delete_user_by_email(user_email:str, db:Session) -> dict:
     db.commit()
 
     return {'message':f'User with the details: {user.userid}, {user.username}, {user.email}, deleted succesfully'}
+
+def get_user_storage(user_id:int, db:Session) -> Storage:
+    storage = db.query(Storage).filter(Storage.userid == user_id).first()
+    print(storage.__dict__)
+    if storage is None:
+        raise HTTPException(status_code=404, detail=f'No storage was found for the user id: {user_id}')
+    return storage
