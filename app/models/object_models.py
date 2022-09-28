@@ -18,6 +18,6 @@ class Storage(Base):
     __tablename__ = 'user_storage'
 
     storageId = Column(Integer, primary_key = True, index=True)
-    userId = Column(Integer, ForeignKey("users.userid"))
+    userid = Column(Integer, ForeignKey("users.userid"))
     shoe_storage_space = Column(JSON)
     flips_storage_space = Column(JSON)

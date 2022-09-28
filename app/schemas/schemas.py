@@ -1,5 +1,5 @@
 from pydantic import BaseModel, Json, validator
-from typing import Union
+from typing import Union, Optional, Dict
 
 class UserBase(BaseModel):
     username: Union[str, None] = None
@@ -30,15 +30,15 @@ class User(UserBase):
         orm_mode=True
 
 class StorageBase(BaseModel):
-    flips_storage: Json
-    shoe_storage: Json
+    shoe_storage_space: Optional[Dict]
+    flips_storage_space: Optional[Dict]
 
 class StorageCreation(StorageBase):
     pass
 
 class Storage(StorageBase):
-    storage_id:int
-    user_id:int
+    storageId:int
+    userid:int
 
     class Config:
         orm_mode=True
