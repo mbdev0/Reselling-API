@@ -12,7 +12,7 @@ class User(Base):
     email = Column(String, unique=True, index=True)
     password = Column(String)
 
-    storage = relationship("Storage", backref = 'users',uselist=False)
+    storage = relationship("Storage", backref = 'users',uselist=False, cascade = 'all,delete,delete-orphan')
 
 class Storage(Base):
     __tablename__ = 'user_storage'
