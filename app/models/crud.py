@@ -6,11 +6,11 @@ from fastapi import HTTPException
 
 """
 For STORAGE
-    get shoe storage
-    get flips storage
+    get shoe storage x 
+    get flips storage x 
     add an item to shoe storage
     add an item to flips storage
-    update an items -> any of its dict keys
+    update an items -> any of its dict keys e.g price, quantity, etc
     delete an item from storage
     delete an item from flips storage
     clear the inventory -> flips and storage -> or either or
@@ -20,14 +20,31 @@ For STORAGE
 
 def create_storage(user_email:str,db:Session) -> Storage:
     user = get_user_by_email(user_email=user_email,db=db)
-    print(user.userid)
     db_storage = Storage(shoe_storage_space={},flips_storage_space={},userid=user.userid)
     db.add(db_storage)
     db.commit()
     db.refresh(db_storage)
 
     return db_storage
-    
+
+def get_user_storage(user_id:int, db:Session) -> Storage:
+    storage = db.query(Storage).filter(Storage.userid == user_id).first()
+    if storage is None:
+        raise HTTPException(status_code=404, detail=f'No storage was found for the user id: {user_id}')
+    return storage
+
+def get_shoe_storage(user_id:int, db: Session):
+    storage = db.query(Storage).filter(Storage.userid == user_id).first()
+    if storage is None:
+        return HTTPException(status_code=404, detail=f'Shoe Storage not found for user: {user_id}')
+    return storage.shoe_storage_space
+
+def get_flips_storage(user_id:int, db: Session):
+    storage = db.query(Storage).filter(Storage.userid == user_id).first()
+    if storage is None:
+        return HTTPException(status_code=404, detail=f'Flips Storage not found for user: {user_id}')
+    return storage.flips_storage_space
+
 """
 For USERS
     Create a user  x
@@ -35,7 +52,7 @@ For USERS
     Get by user email x
     get user by username x
     a users storage needs to be created on sign up -> show too x
-    Get a users storage ID 
+    Get a users storage ID x
     Update a users email x
     update a users password x
     delete a user by id x
@@ -112,9 +129,3 @@ def delete_user_by_email(user_email:str, db:Session) -> dict:
 
     return {'message':f'User with the details: {user.userid}, {user.username}, {user.email}, deleted succesfully'}
 
-def get_user_storage(user_id:int, db:Session) -> Storage:
-    storage = db.query(Storage).filter(Storage.userid == user_id).first()
-    print(storage.__dict__)
-    if storage is None:
-        raise HTTPException(status_code=404, detail=f'No storage was found for the user id: {user_id}')
-    return storage

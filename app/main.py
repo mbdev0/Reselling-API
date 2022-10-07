@@ -44,3 +44,11 @@ def delete_user_by_id(user_id:int, db: Session = Depends(interact_db)):
 @app.get('/user/{user_id}/storage', response_model = schemas.Storage)
 def get_storage_by_userid(user_id:int, db:Session = Depends(interact_db)):
     return crud.get_user_storage(user_id=user_id, db=db)
+
+@app.get('/user/{user_id}/shoestorage')
+def get_shoe_storage(user_id:int, db: Session = Depends(interact_db)):
+    return crud.get_shoe_storage(user_id=user_id, db=db)
+
+@app.get('/user/{user_id}/flipsstorage')
+def get_flips_storage(user_id:int, db: Session = Depends(interact_db)):
+    return crud.get_flips_storage(user_id=user_id, db=db)
