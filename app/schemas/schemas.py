@@ -1,4 +1,4 @@
-from pydantic import BaseModel, Json, validator
+from pydantic import BaseModel
 from typing import Union, Optional, Dict
 
 class UserBase(BaseModel):
@@ -29,12 +29,24 @@ class User(UserBase):
     class Config:
         orm_mode=True
 
-class StorageBase(BaseModel):
-    shoe_storage_space: Optional[Dict]
-    flips_storage_space: Optional[Dict]
 
-class StorageCreation(StorageBase):
-    pass
+class Flips(BaseModel):
+    brand: str
+    model: str
+    quantity: int
+    retail: float
+    status: str
+    resell: Optional[float]
+
+class Shoe(Flips):
+    colorway: str
+    size: float
+    Sku: Optional[str]
+
+
+class StorageBase(BaseModel):
+    shoe_storage_space = {"Shoes":[], "Stats": {}}
+    flips_storage_space =  {"Flips":[], "Stats": {}}
 
 class Storage(StorageBase):
     storageId:int
