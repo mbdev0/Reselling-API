@@ -52,3 +52,12 @@ def get_shoe_storage(user_id:int, db: Session = Depends(interact_db)):
 @app.get('/user/{user_id}/flipsstorage')
 def get_flips_storage(user_id:int, db: Session = Depends(interact_db)):
     return crud.get_flips_storage(user_id=user_id, db=db)
+
+@app.post('/user/{user_id}/shoestorage', response_model=schemas.Shoe)
+def add_shoe(user_id:int, shoe:schemas.Shoe, db: Session = Depends(interact_db)):
+    return crud.add_shoe_to_storage(user_id=user_id, shoe=shoe, db=db)
+
+@app.post('/user/{user_id}/flipsstorage', response_model=schemas.Flips)
+def add_flip(user_id:int, flip:schemas.Flips, db: Session = Depends(interact_db)):
+    return crud.add_flips_to_storage(user_id=user_id, item=flip, db=db)
+
