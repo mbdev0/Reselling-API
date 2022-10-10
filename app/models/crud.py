@@ -1,5 +1,6 @@
 from schemas import schemas
 from sqlalchemy.orm import Session
+from sqlalchemy.orm.attributes import flag_modified
 from models.object_models import User, Storage
 from typing import List
 from fastapi import HTTPException
@@ -8,7 +9,7 @@ from fastapi import HTTPException
 For STORAGE
     get shoe storage x 
     get flips storage x 
-    add an item to shoe storage
+    add an item to shoe storage 
     add an item to flips storage
     update an items -> any of its dict keys e.g price, quantity, etc
     delete an item from storage
@@ -20,7 +21,7 @@ For STORAGE
 
 def create_storage(user_email:str,db:Session) -> Storage:
     user = get_user_by_email(user_email=user_email,db=db)
-    db_storage = Storage(shoe_storage_space={},flips_storage_space={},userid=user.userid)
+    db_storage = Storage(shoe_storage_space={"Shoes":[],"Stats":{}},flips_storage_space={"Items":[],"Stats":{}},userid=user.userid)
     db.add(db_storage)
     db.commit()
     db.refresh(db_storage)
@@ -45,19 +46,24 @@ def get_flips_storage(user_id:int, db: Session):
         return HTTPException(status_code=404, detail=f'Flips Storage not found for user: {user_id}')
     return storage.flips_storage_space
 
-"""
-For USERS
-    Create a user  x
-    Get by user id x
-    Get by user email x
-    get user by username x
-    a users storage needs to be created on sign up -> show too x
-    Get a users storage ID x
-    Update a users email x
-    update a users password x
-    delete a user by id x
-    delete a user by email x
-"""
+def add_shoe_to_storage(user_id:int, shoe:schemas.Shoe, db:Session):
+    storage = get_user_storage(user_id=user_id,db=db)
+    storage.shoe_storage_space['Shoes'].append(shoe.__dict__) 
+    flag_modified(storage, "shoe_storage_space")
+    db.add(storage)
+    db.commit()
+
+    return shoe
+
+def add_flips_to_storage(user_id:int, item:schemas.Flips, db:Session):
+    storage = get_user_storage(user_id=user_id,db=db)
+    storage.flips_storage_space['Items'].append(item.__dict__) 
+    flag_modified(storage, "flips_storage_space")
+    db.add(storage)
+    db.commit()
+
+    return item
+
 def get_user_by_id(user_id:int,db:Session) -> User:
     get_by_id = db.query(User).filter(User.userid==user_id).first()
     if get_by_id is None:
