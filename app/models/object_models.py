@@ -1,8 +1,6 @@
-from sqlalchemy import Boolean, Column, ForeignKey, Integer, String, JSON
-from sqlalchemy.orm import relationship, Session
-
+from sqlalchemy import Column, ForeignKey, Integer, String, JSON
+from sqlalchemy.orm import relationship
 from configuration.dbconfig import Base
-from schemas import schemas
 
 class User(Base):
     __tablename__ = 'users'
