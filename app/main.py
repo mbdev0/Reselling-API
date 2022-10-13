@@ -2,7 +2,7 @@ from models import object_models, crud
 from fastapi import Depends, FastAPI, HTTPException
 from configuration.dbconfig import engine, SessionLocal
 from sqlalchemy.orm import Session
-from typing import List, Union
+from typing import List
 
 from schemas import schemas
 
@@ -69,3 +69,11 @@ def get_flips_storage_item(user_id:int,item_id:str ,db: Session = Depends(intera
 def get_shoe_storage_item(user_id:int,shoe_id:str ,db: Session = Depends(interact_db)):
     return crud.get_shoe_item_by_id(user_id=user_id, shoe_id=shoe_id, db=db)
 
+@app.patch("/users/{user_id}/flipsstorage/{item_id}")
+def update_item_by_id(user_id:int, item_id:str, item_updating:schemas.Flips ,db:Session = Depends(interact_db)):
+    return crud.update_flip_item(user_id=user_id,item_id=item_id, item=item_updating, db=db)
+
+@app.patch("/users/{user_id}/shoestorage/{shoe_id}")
+def update_shoe_by_id(user_id:int, shoe_id: str, shoe: schemas.Shoe, db:Session = Depends(interact_db)):
+    return crud.update_shoe_item(user_id=user_id,shoe_id=shoe_id, shoe=shoe, db=db)
+    
