@@ -33,19 +33,19 @@ class User(UserBase):
         orm_mode=True
 
 class Flips(BaseModel):
-    brand: str
-    model: str
-    quantity: int
-    retail: float
-    status: str
+    brand: Optional[str]
+    model: Optional[str]
+    quantity: Optional[int]
+    retail: Optional[float]
+    status: Optional[str]
     resell: Optional[float]
 
 class FlipsCreation(Flips):
     id:UUID
 
 class Shoe(Flips):
-    colorway: str
-    size: float
+    colorway: Optional[str]
+    size: Optional[float]
     Sku: Optional[str]
 
 class ShoeCreation(Shoe):
