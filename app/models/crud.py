@@ -88,17 +88,34 @@ def get_shoe_item_by_id(user_id:int, shoe_id: str, db:Session):
     return HTTPException(status_code=404, detail=f'Shoe with id: {shoe_id} not found')
 
 def update_flip_item(user_id:int, item_id: str, item: schemas.Flips, db:Session):
-    flip_item = get_flip_item_by_id(user_id=user_id, item_id=item_id,db=db)
-    flip_item_update = item.dict(exclude_unset=True)
+    storage = get_user_storage(user_id=user_id,db=db)
 
-    for key,value in flip_item_update.items():
-        setattr(flip_item, key, value)
-    
-    db.add(flip_item)
-    db.commit()
-    db.refresh(flip_item)
+    for it in storage.flips_storage_space['Items']:
+        print(it['id'])
+        if it['id'] == item_id:
+            for key,value in item.dict(exclude_unset=True).items():
+                it[key] = value
+            flag_modified(storage, "flips_storage_space")
+            db.add(storage)
+            db.commit()
+            return it
 
-    return flip_item
+    return HTTPException(status_code=404, detail=f'Item with id: {item_id} not found')
+
+def update_shoe_item(user_id:int, shoe_id: str, shoe: schemas.Shoe, db:Session):
+    storage = get_user_storage(user_id=user_id,db=db)
+
+    for it in storage.shoe_storage_space['Shoes']:
+        print(it['id'])
+        if it['id'] == shoe_id:
+            for key,value in shoe.dict(exclude_unset=True).items():
+                it[key] = value
+            flag_modified(storage, "shoe_storage_space")
+            db.add(storage)
+            db.commit()
+            return it
+
+    return HTTPException(status_code=404, detail=f'Shoe with id: {shoe_id} not found')
 
 def get_user_by_id(user_id:int,db:Session) -> User:
     get_by_id = db.query(User).filter(User.userid==user_id).first()
