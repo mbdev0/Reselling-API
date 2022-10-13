@@ -33,8 +33,8 @@ def get_all_users(db:Session = Depends(interact_db)):
 def get_user_by_id(user_id:int, db: Session = Depends(interact_db)):
     return crud.get_user_by_id(user_id=user_id, db=db)
 
-@app.patch('/user/{user_id}', response_model=schemas.User)
-def update_user(user_id: int, user: schemas.User, db: Session = Depends(interact_db)):
+@app.patch('/user/{user_id}', response_model=schemas.UserCreation)
+def update_user(user_id: int, user: schemas.UserCreation, db: Session = Depends(interact_db)):
     return crud.update_user(user_id=user_id, user=user, db=db)
 
 @app.delete('/user/{user_id}',response_model=dict)
@@ -53,11 +53,19 @@ def get_shoe_storage(user_id:int, db: Session = Depends(interact_db)):
 def get_flips_storage(user_id:int, db: Session = Depends(interact_db)):
     return crud.get_flips_storage(user_id=user_id, db=db)
 
-@app.post('/user/{user_id}/shoestorage', response_model=schemas.Shoe)
+@app.post('/user/{user_id}/shoestorage', response_model=schemas.ShoeCreation)
 def add_shoe(user_id:int, shoe:schemas.Shoe, db: Session = Depends(interact_db)):
     return crud.add_shoe_to_storage(user_id=user_id, shoe=shoe, db=db)
 
-@app.post('/user/{user_id}/flipsstorage', response_model=schemas.Flips)
+@app.post('/user/{user_id}/flipsstorage', response_model=schemas.FlipsCreation)
 def add_flip(user_id:int, flip:schemas.Flips, db: Session = Depends(interact_db)):
     return crud.add_flips_to_storage(user_id=user_id, item=flip, db=db)
+
+@app.get("/user/{user_id}/flipstorage/{item_id}")
+def get_flips_storage_item(user_id:int,item_id:str ,db: Session = Depends(interact_db)):
+    return crud.get_flip_item_by_id(user_id=user_id,item_id=item_id,db=db)
+
+@app.get("/user/{user_id}/shoestorage/{shoe_id}")
+def get_shoe_storage_item(user_id:int,shoe_id:str ,db: Session = Depends(interact_db)):
+    return crud.get_shoe_item_by_id(user_id=user_id, shoe_id=shoe_id, db=db)
 
