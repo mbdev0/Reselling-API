@@ -1,6 +1,9 @@
 from pydantic import BaseModel
 from typing import Union, Optional, Dict
 
+# Do i want the id's to be automatically generated from here or not
+from uuid import UUID
+
 class UserBase(BaseModel):
     username: Union[str, None] = None
     email: Union[str, None] = None
@@ -29,7 +32,6 @@ class User(UserBase):
     class Config:
         orm_mode=True
 
-
 class Flips(BaseModel):
     brand: str
     model: str
@@ -38,11 +40,16 @@ class Flips(BaseModel):
     status: str
     resell: Optional[float]
 
+class FlipsCreation(Flips):
+    id:UUID
+
 class Shoe(Flips):
     colorway: str
     size: float
     Sku: Optional[str]
 
+class ShoeCreation(Shoe):
+    id:UUID
 
 class StorageBase(BaseModel):
     shoe_storage_space = {"Shoes":[], "Stats": {}}
