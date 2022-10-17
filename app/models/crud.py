@@ -12,12 +12,13 @@ For STORAGE
     get flips storage x 
     add an item to shoe storage x
     add an item to flips storage x
-    update an items -> any of its dict keys e.g price, quantity, etc
-    delete an item from storage
-    delete an item from flips storage
-    clear the inventory -> flips and storage -> or either or
-    get total amount of retail for shoe or flips -> or both
-    get net profit (resell-retail) for shoe or flips -> or both
+    update an items -> any of its dict keys e.g price, quantity, etc x
+    delete an item from storage 
+    delete an item from flips storage 
+    clear the inventory -> flips and storage -> or either or 
+
+    get total amount of retail for shoe or flips -> or both 
+    get net profit (resell-retail) for shoe or flips -> or both 
 """
 
 def create_storage(user_email:str,db:Session) -> Storage:
@@ -106,7 +107,6 @@ def update_shoe_item(user_id:int, shoe_id: str, shoe: schemas.Shoe, db:Session):
     storage = get_user_storage(user_id=user_id,db=db)
 
     for it in storage.shoe_storage_space['Shoes']:
-        print(it['id'])
         if it['id'] == shoe_id:
             for key,value in shoe.dict(exclude_unset=True).items():
                 it[key] = value
@@ -116,6 +116,44 @@ def update_shoe_item(user_id:int, shoe_id: str, shoe: schemas.Shoe, db:Session):
             return it
 
     return HTTPException(status_code=404, detail=f'Shoe with id: {shoe_id} not found')
+
+def delete_item_by_itemid(user_id: int ,item_id: str, deleteAllFlag: bool ,db:Session):
+    storage = get_user_storage(user_id=user_id, db=db)
+    if deleteAllFlag:
+        storage.flips_storage_space['Items'] = []
+        flag_modified(storage,'flips_storage_space')
+        db.add(storage)
+        db.commit()
+        return storage.flips_storage_space['Items']
+
+    for i,it in enumerate(storage.flips_storage_space['Items']):
+        if it['id'] == item_id:
+            storage.flips_storage_space['Items'].pop(i)
+            flag_modified(storage,"flips_storage_space")
+            db.add(storage)
+            db.commit()
+            return storage.flips_storage_space['Items']
+
+def delete_item_by_shoeid(user_id: int ,shoe_id: str, deleteAllFlag: bool ,db:Session):
+    storage = get_user_storage(user_id=user_id, db=db)
+    if deleteAllFlag:
+        storage.shoe_storage_space['Shoes'] = []
+        flag_modified(storage,'shoe_storage_space')
+        db.add(storage)
+        db.commit()
+        return storage.shoe_storage_space['Shoes']
+
+    for i,it in enumerate(storage.shoe_storage_space['Shoes']):
+        if it['id'] == shoe_id:
+            storage.shoe_storage_space['Shoes'].pop(i)
+            flag_modified(storage,"shoe_storage_space")
+            db.add(storage)
+            db.commit()
+            return storage.shoe_storage_space['Shoes']
+
+
+
+
 
 def get_user_by_id(user_id:int,db:Session) -> User:
     get_by_id = db.query(User).filter(User.userid==user_id).first()

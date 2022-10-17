@@ -69,11 +69,18 @@ def get_flips_storage_item(user_id:int,item_id:str ,db: Session = Depends(intera
 def get_shoe_storage_item(user_id:int,shoe_id:str ,db: Session = Depends(interact_db)):
     return crud.get_shoe_item_by_id(user_id=user_id, shoe_id=shoe_id, db=db)
 
-@app.patch("/users/{user_id}/flipsstorage/{item_id}")
+@app.patch("/users/{user_id}/flipsstorage/{item_id}", response_model=schemas.FlipsCreation)
 def update_item_by_id(user_id:int, item_id:str, item_updating:schemas.Flips ,db:Session = Depends(interact_db)):
     return crud.update_flip_item(user_id=user_id,item_id=item_id, item=item_updating, db=db)
 
-@app.patch("/users/{user_id}/shoestorage/{shoe_id}")
+@app.patch("/users/{user_id}/shoestorage/{shoe_id}", response_model=schemas.ShoeCreation)
 def update_shoe_by_id(user_id:int, shoe_id: str, shoe: schemas.Shoe, db:Session = Depends(interact_db)):
     return crud.update_shoe_item(user_id=user_id,shoe_id=shoe_id, shoe=shoe, db=db)
     
+@app.delete('/users/{user_id}/flipsstorage/{item_id}', response_model=list[schemas.FlipsCreation])
+def delete_item(user_id:int, item_id:str, deleteAll: bool = False,db:Session= Depends(interact_db)):
+    return crud.delete_item_by_itemid(user_id=user_id, item_id=item_id, deleteAllFlag=deleteAll,db=db)
+
+@app.delete('/users/{user_id}/shoestorage/{shoe_id}', response_model = str)
+def delete_item(user_id:int, shoe_id:str, deleteAll: bool = False,db:Session= Depends(interact_db)):
+    return crud.delete_item_by_shoeid(user_id=user_id, shoe_id=shoe_id, deleteAllFlag=deleteAll, db=db)
