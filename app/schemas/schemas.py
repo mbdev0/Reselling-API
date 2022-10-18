@@ -1,5 +1,5 @@
-from pydantic import BaseModel
-from typing import Union, Optional, Dict
+from pydantic import BaseModel, conint, confloat
+from typing import Union, Optional, Literal
 
 # Do i want the id's to be automatically generated from here or not
 from uuid import UUID
@@ -35,17 +35,17 @@ class User(UserBase):
 class Flips(BaseModel):
     brand: Optional[str]
     model: Optional[str]
-    quantity: Optional[int]
-    retail: Optional[float]
-    status: Optional[str]
-    resell: Optional[float]
+    quantity: conint(gt=0)
+    retail: confloat(gt=0)
+    status: Optional[Literal['NOT LISTED', 'LISTED', 'PACKED', 'SHIPPED']]
+    resell: confloat(gt=0)
 
 class FlipsCreation(Flips):
     id:UUID
 
 class Shoe(Flips):
     colorway: Optional[str]
-    size: Optional[float]
+    size: confloat(gt=0)
     Sku: Optional[str]
 
 class ShoeCreation(Shoe):
