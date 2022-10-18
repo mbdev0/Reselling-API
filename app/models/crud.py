@@ -13,9 +13,9 @@ For STORAGE
     add an item to shoe storage x
     add an item to flips storage x
     update an items -> any of its dict keys e.g price, quantity, etc x
-    delete an item from storage 
-    delete an item from flips storage 
-    clear the inventory -> flips and storage -> or either or 
+    delete an item from storage x
+    delete an item from flips storage x
+    clear the inventory -> flips and storage -> or either or  x
 
     get total amount of retail for shoe or flips -> or both 
     get net profit (resell-retail) for shoe or flips -> or both 
@@ -23,7 +23,8 @@ For STORAGE
 
 def create_storage(user_email:str,db:Session) -> Storage:
     user = get_user_by_email(user_email=user_email,db=db)
-    db_storage = Storage(shoe_storage_space={"Shoes":[],"Stats":{}},flips_storage_space={"Items":[],"Stats":{}},userid=user.userid)
+    db_storage = Storage(shoe_storage_space=schemas.StorageBase.__fields__['shoe_storage_space'].default
+    ,flips_storage_space=schemas.StorageBase.__fields__['flips_storage_space'].default,userid=user.userid)
     db.add(db_storage)
     db.commit()
     db.refresh(db_storage)
@@ -39,13 +40,13 @@ def get_user_storage(user_id:int, db:Session) -> Storage:
 def get_shoe_storage(user_id:int, db: Session):
     storage = db.query(Storage).filter(Storage.userid == user_id).first()
     if storage is None:
-        return HTTPException(status_code=404, detail=f'Shoe Storage not found for user: {user_id}')
+        raise HTTPException(status_code=404, detail=f'Shoe Storage not found for user: {user_id}')
     return storage.shoe_storage_space
 
 def get_flips_storage(user_id:int, db: Session):
     storage = db.query(Storage).filter(Storage.userid == user_id).first()
     if storage is None:
-        return HTTPException(status_code=404, detail=f'Flips Storage not found for user: {user_id}')
+        raise HTTPException(status_code=404, detail=f'Flips Storage not found for user: {user_id}')
     return storage.flips_storage_space
 
 def add_shoe_to_storage(user_id:int, shoe:schemas.ShoeCreation, db:Session):
@@ -77,7 +78,7 @@ def get_flip_item_by_id(user_id:int, item_id:str, db:Session):
         if item['id'] == item_id:
             return item
         
-    return HTTPException(status_code=404, detail=f'Item with id: {item_id} not found')
+    raise HTTPException(status_code=404, detail=f'Item with id: {item_id} not found')
 
 def get_shoe_item_by_id(user_id:int, shoe_id: str, db:Session):
     shoe_storage = get_shoe_storage(user_id=user_id, db=db)
@@ -86,7 +87,7 @@ def get_shoe_item_by_id(user_id:int, shoe_id: str, db:Session):
         if shoe['id'] == shoe_id:
             return shoe
     
-    return HTTPException(status_code=404, detail=f'Shoe with id: {shoe_id} not found')
+    raise HTTPException(status_code=404, detail=f'Shoe with id: {shoe_id} not found')
 
 def update_flip_item(user_id:int, item_id: str, item: schemas.Flips, db:Session):
     storage = get_user_storage(user_id=user_id,db=db)
@@ -101,7 +102,7 @@ def update_flip_item(user_id:int, item_id: str, item: schemas.Flips, db:Session)
             db.commit()
             return it
 
-    return HTTPException(status_code=404, detail=f'Item with id: {item_id} not found')
+    raise HTTPException(status_code=404, detail=f'Item with id: {item_id} not found')
 
 def update_shoe_item(user_id:int, shoe_id: str, shoe: schemas.Shoe, db:Session):
     storage = get_user_storage(user_id=user_id,db=db)
@@ -115,10 +116,11 @@ def update_shoe_item(user_id:int, shoe_id: str, shoe: schemas.Shoe, db:Session):
             db.commit()
             return it
 
-    return HTTPException(status_code=404, detail=f'Shoe with id: {shoe_id} not found')
+    raise HTTPException(status_code=404, detail=f'Shoe with id: {shoe_id} not found')
 
 def delete_item_by_itemid(user_id: int ,item_id: str, deleteAllFlag: bool ,db:Session):
     storage = get_user_storage(user_id=user_id, db=db)
+    get_flip_item_by_id(user_id=user_id, item_id=item_id,db=db)
     if deleteAllFlag:
         storage.flips_storage_space['Items'] = []
         flag_modified(storage,'flips_storage_space')
@@ -136,6 +138,8 @@ def delete_item_by_itemid(user_id: int ,item_id: str, deleteAllFlag: bool ,db:Se
 
 def delete_item_by_shoeid(user_id: int ,shoe_id: str, deleteAllFlag: bool ,db:Session):
     storage = get_user_storage(user_id=user_id, db=db)
+    get_shoe_item_by_id(user_id=user_id, shoe_id=shoe_id,db=db)
+
     if deleteAllFlag:
         storage.shoe_storage_space['Shoes'] = []
         flag_modified(storage,'shoe_storage_space')
@@ -150,10 +154,18 @@ def delete_item_by_shoeid(user_id: int ,shoe_id: str, deleteAllFlag: bool ,db:Se
             db.add(storage)
             db.commit()
             return storage.shoe_storage_space['Shoes']
+    
+    raise HTTPException(status_code=404, detail='Code not founds')
 
+def get_stats_for_shoes(user_id: int, db:Session):
+    storage = get_user_storage(user_id=user_id, db=db)
+    print(storage.shoe_storage_space['Stats'])
 
+    for item in storage.shoe_storage_space['Shoes']:
+        print(item)
 
-
+def get_stats_for_flips(user_id:int, db:Session):
+    pass
 
 def get_user_by_id(user_id:int,db:Session) -> User:
     get_by_id = db.query(User).filter(User.userid==user_id).first()
@@ -184,6 +196,7 @@ def create_user(user:schemas.UserCreation, db:Session) -> dict:
     db.commit()
     db.refresh(db_user)
     storage=create_storage(user_email=user.email,db=db)
+
 
     resp= {
         "username":db_user.username,

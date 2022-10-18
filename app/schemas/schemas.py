@@ -1,7 +1,5 @@
 from pydantic import BaseModel, conint, confloat
 from typing import Union, Optional, Literal
-
-# Do i want the id's to be automatically generated from here or not
 from uuid import UUID
 
 class UserBase(BaseModel):
@@ -13,18 +11,6 @@ class UserCreation(UserBase):
 
     class Config:
         orm_mode=True
-
-# To be used later
-    # @validator('email')
-    # def check_none_email(cls,c):
-    #     if c is None:
-    #         raise ValueError('Email = None')
-    #     return c
-    
-    # @validator('password')
-    # def check_none_pass(cls,c):
-    #     if c is None:
-    #         raise ValueError('Pass is none')
             
 class User(UserBase):
     userid: Union[str, None] = None
@@ -35,25 +21,33 @@ class User(UserBase):
 class Flips(BaseModel):
     brand: Optional[str]
     model: Optional[str]
-    quantity: conint(gt=0)
-    retail: confloat(gt=0)
+    quantity: Optional[conint(gt=0)]
+    retail: Optional[confloat(gt=0)]
     status: Optional[Literal['NOT LISTED', 'LISTED', 'PACKED', 'SHIPPED']]
-    resell: confloat(gt=0)
+    resell: Optional[confloat(ge=0)]
 
 class FlipsCreation(Flips):
     id:UUID
 
 class Shoe(Flips):
     colorway: Optional[str]
-    size: confloat(gt=0)
+    size: Optional[confloat(gt=0)]
     Sku: Optional[str]
 
 class ShoeCreation(Shoe):
     id:UUID
 
 class StorageBase(BaseModel):
-    shoe_storage_space = {"Shoes":[], "Stats": {}}
-    flips_storage_space =  {"Flips":[], "Stats": {}}
+    shoe_storage_space = {"Shoes":[], "Stats": {
+            "total_retail":0, "total_resell":0, "current_net": 0, "shoe_quantity":0, "amount_not_listed":0, "amount_listed":0,
+            "amount_packed":0,"amount_shipped":0
+            }
+        }
+    flips_storage_space =  {"Flips":[], "Stats": {
+            "total_retail":0, "total_resell":0, "current_net": 0, "shoe_quantity":0, "amount_not_listed":0, "amount_listed":0,
+            "amount_packed":0,"amount_shipped":0
+            }
+        }
 
 class Storage(StorageBase):
     storageId:int
