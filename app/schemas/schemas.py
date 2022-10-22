@@ -1,5 +1,5 @@
 from pydantic import BaseModel, conint, confloat
-from typing import Union, Optional, Literal
+from typing import Union, Optional, Literal, List, Dict
 from uuid import UUID
 
 class UserBase(BaseModel):
@@ -56,3 +56,10 @@ class Storage(StorageBase):
     class Config:
         orm_mode=True
 
+class Flips_Storage_Out(BaseModel):
+    Flips:List[FlipsCreation]
+    Stats: dict[str,int]
+
+class Shoes_Storage_Out(BaseModel):
+    Shoes:List[ShoeCreation]
+    Stats: dict[str,int]
