@@ -39,12 +39,12 @@ class ShoeCreation(Shoe):
 
 class StorageBase(BaseModel):
     shoe_storage_space = {"Shoes":[], "Stats": {
-            "total_retail":0, "total_resell":0, "current_net": 0, "shoe_quantity":0, "amount_not_listed":0, "amount_listed":0,
+            "total_retail":0, "total_resell":0, "current_net": 0, "total_quantity":0, "amount_not_listed":0, "amount_listed":0,
             "amount_packed":0,"amount_shipped":0
             }
         }
     flips_storage_space =  {"Flips":[], "Stats": {
-            "total_retail":0, "total_resell":0, "current_net": 0, "shoe_quantity":0, "amount_not_listed":0, "amount_listed":0,
+            "total_retail":0, "total_resell":0, "current_net": 0, "total_quantity":0, "amount_not_listed":0, "amount_listed":0,
             "amount_packed":0,"amount_shipped":0
             }
         }
