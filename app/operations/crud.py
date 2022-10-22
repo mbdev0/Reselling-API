@@ -2,6 +2,7 @@ from schemas import schemas
 from sqlalchemy.orm import Session
 from sqlalchemy.orm.attributes import flag_modified
 from models.object_models import User, Storage
+from operations import helper
 from typing import List
 from fastapi import HTTPException
 import uuid
@@ -163,32 +164,17 @@ def delete_item_by_shoeid(user_id: int ,shoe_id: str, deleteAllFlag: bool ,db:Se
     
     raise HTTPException(status_code=404, detail='Code not founds')
 
-def new_product_stats_helper(current_stats:dict, new_product: dict):
-    print('Stats helper')
-    current_stats['total_retail'] += (new_product['retail'] * new_product['quantity'])
-    current_stats['total_resell'] += (new_product['resell'] * new_product['quantity']) 
-    current_stats['current_net'] = current_stats['total_resell'] - current_stats['total_retail']
-    current_stats['total_quantity'] += new_product['quantity']
-
-    if new_product['status'] == 'NOT LISTED':
-        current_stats['amount_not_listed'] += new_product['quantity']
-    elif new_product['status'] == 'LISTED':
-        current_stats['amount_listed'] += new_product['quantity']
-    elif new_product['status'] == 'PACKED':
-        current_stats['amount_packed'] += new_product['quantity']
-    elif new_product['status'] == 'SHIPPED':
-        current_stats['amount_shipped'] += new_product['quantity']
 
 def new_product_on_stats(user_id: int, db:Session, product:dict = None ,shoe: bool = False, flip: bool = False):
     storage = get_user_storage(user_id=user_id, db=db)
 
     if shoe:
-        new_product_stats_helper(current_stats=storage.shoe_storage_space.get('Stats'), new_product= product)
+        helper.new_product_stats_helper(current_stats=storage.shoe_storage_space.get('Stats'), new_product= product)
         flag_modified(storage, 'shoe_storage_space')
         db.add(storage)
         db.commit()
     elif flip:
-        new_product_stats_helper(current_stats=storage.flips_storage_space.get('Stats'), new_product=product)
+        helper.new_product_stats_helper(current_stats=storage.flips_storage_space.get('Stats'), new_product=product)
         flag_modified(storage, 'flips_storage_space')
         db.add(storage)
         db.commit()
