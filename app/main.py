@@ -1,4 +1,5 @@
-from models import object_models, crud
+from models import object_models
+from operations import crud
 from fastapi import Depends, FastAPI, HTTPException
 from configuration.dbconfig import engine, SessionLocal
 from sqlalchemy.orm import Session
