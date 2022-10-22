@@ -64,16 +64,18 @@ def add_flips_to_storage(user_id:int, item:schemas.FlipsCreation, db:Session):
     storage = get_user_storage(user_id=user_id,db=db)
     item = item.__dict__
     item['id'] = str(uuid.uuid4())
-    storage.flips_storage_space['Items'].append(item)
+    storage.flips_storage_space['Flips'].append(item)
     flag_modified(storage, "flips_storage_space")
     db.add(storage)
     db.commit()
+
+    new_product_on_stats(user_id=user_id, db=db, product=item, flip=True)
 
     return item
 
 def get_flip_item_by_id(user_id:int, item_id:str, db:Session):
     storage = get_flips_storage(user_id=user_id,db=db)
-    items = storage['Items']
+    items = storage['Flips']
     for item in items:
         if item['id'] == item_id:
             return item
@@ -92,7 +94,7 @@ def get_shoe_item_by_id(user_id:int, shoe_id: str, db:Session):
 def update_flip_item(user_id:int, item_id: str, item: schemas.Flips, db:Session):
     storage = get_user_storage(user_id=user_id,db=db)
 
-    for it in storage.flips_storage_space['Items']:
+    for it in storage.flips_storage_space['Flips']:
         print(it['id'])
         if it['id'] == item_id:
             for key,value in item.dict(exclude_unset=True).items():
@@ -118,35 +120,37 @@ def update_shoe_item(user_id:int, shoe_id: str, shoe: schemas.Shoe, db:Session):
 
     raise HTTPException(status_code=404, detail=f'Shoe with id: {shoe_id} not found')
 
-def delete_item_by_itemid(user_id: int ,item_id: str, deleteAllFlag: bool ,db:Session):
+def delete_item_by_itemid(user_id: int ,item_id: str, deleteAllFlag: bool,db:Session):
     storage = get_user_storage(user_id=user_id, db=db)
-    get_flip_item_by_id(user_id=user_id, item_id=item_id,db=db)
     if deleteAllFlag:
-        storage.flips_storage_space['Items'] = []
+        storage.flips_storage_space['Flips'] = []
+        storage.flips_storage_space['Stats'] = schemas.StorageBase.__dict__['__fields__']['flips_storage_space'].default['Stats']
         flag_modified(storage,'flips_storage_space')
         db.add(storage)
         db.commit()
-        return storage.flips_storage_space['Items']
+        return storage.flips_storage_space
 
-    for i,it in enumerate(storage.flips_storage_space['Items']):
+    get_flip_item_by_id(user_id=user_id, item_id=item_id,db=db)
+    for i,it in enumerate(storage.flips_storage_space['Flips']):
         if it['id'] == item_id:
-            storage.flips_storage_space['Items'].pop(i)
+            storage.flips_storage_space['Flips'].pop(i)
             flag_modified(storage,"flips_storage_space")
             db.add(storage)
             db.commit()
-            return storage.flips_storage_space['Items']
+            return storage.flips_storage_space['Flips']
 
 def delete_item_by_shoeid(user_id: int ,shoe_id: str, deleteAllFlag: bool ,db:Session):
     storage = get_user_storage(user_id=user_id, db=db)
-    get_shoe_item_by_id(user_id=user_id, shoe_id=shoe_id,db=db)
-
     if deleteAllFlag:
         storage.shoe_storage_space['Shoes'] = []
+        storage.shoe_storage_space['Stats'] = schemas.StorageBase.__dict__['__fields__']['shoe_storage_space'].default['Stats']
+
         flag_modified(storage,'shoe_storage_space')
         db.add(storage)
         db.commit()
         return storage.shoe_storage_space['Shoes']
 
+    get_shoe_item_by_id(user_id=user_id, shoe_id=shoe_id,db=db)
     for i,it in enumerate(storage.shoe_storage_space['Shoes']):
         if it['id'] == shoe_id:
             storage.shoe_storage_space['Shoes'].pop(i)
@@ -157,12 +161,48 @@ def delete_item_by_shoeid(user_id: int ,shoe_id: str, deleteAllFlag: bool ,db:Se
     
     raise HTTPException(status_code=404, detail='Code not founds')
 
-def get_stats_for_shoes(user_id: int, db:Session):
-    storage = get_user_storage(user_id=user_id, db=db)
-    print(storage.shoe_storage_space['Stats'])
+def stats_helper(current_stats:dict, new_product: dict):
+    print('Stats helper')
+    current_stats['total_retail'] = current_stats['total_retail'] + (new_product['retail'] * new_product['quantity'])
+    print(current_stats)
 
-    for item in storage.shoe_storage_space['Shoes']:
-        print(item)
+def new_product_on_stats(user_id: int, db:Session, product:dict = None ,shoe: bool = False, flip: bool = True):
+    storage = get_user_storage(user_id=user_id, db=db)
+    print(storage.flips_storage_space.get('Stats'))
+
+    if shoe:
+        stats_helper(current_stats=storage.shoe_storage_space.get('Stats'), new_product= product)
+    elif flip:
+        stats_helper(current_stats=storage.flips_storage_space.get('Stats'), new_product=product)
+        flag_modified(storage, 'flips_storage_space')
+        db.add(storage)
+        db.commit()
+    else:
+        pass
+    
+    """
+    storage.shoe_storage_space['Stats']['total_retail']
+    storage.shoe_storage_space['Stats']['total_resell']
+    storage.shoe_storage_space['Stats']['current_net']
+    storage.shoe_storage_space['Stats']['shoe_quantity']
+
+    storage.shoe_storage_space['Stats']['amount_not_listed']
+    storage.shoe_storage_space['Stats']['amount_listed']
+    storage.shoe_storage_space['Stats']['amount_packed']
+    storage.shoe_storage_space['Stats']['amount_shipped']
+    """
+    """
+    get current stats
+        if new product added
+            add on all data onto current stats
+
+        if product updated
+            pop product
+            get products new stats
+            update stats 
+    """
+
+    #print(storage.flips_storage_space['Stats'])
 
 def get_stats_for_flips(user_id:int, db:Session):
     pass
