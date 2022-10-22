@@ -161,7 +161,7 @@ def delete_item_by_shoeid(user_id: int ,shoe_id: str, deleteAllFlag: bool ,db:Se
     
     raise HTTPException(status_code=404, detail='Code not founds')
 
-def stats_helper(current_stats:dict, new_product: dict):
+def new_product_stats_helper(current_stats:dict, new_product: dict):
     print('Stats helper')
     current_stats['total_retail'] += (new_product['retail'] * new_product['quantity'])
     current_stats['total_resell'] += (new_product['resell'] * new_product['quantity']) 
@@ -178,17 +178,17 @@ def stats_helper(current_stats:dict, new_product: dict):
         current_stats['amount_shipped'] += new_product['quantity']
 
 
-def new_product_on_stats(user_id: int, db:Session, product:dict = None ,shoe: bool = False, flip: bool = True):
+def new_product_on_stats(user_id: int, db:Session, product:dict = None ,shoe: bool = False, flip: bool = False):
     storage = get_user_storage(user_id=user_id, db=db)
     print(storage.flips_storage_space.get('Stats'))
 
     if shoe:
-        stats_helper(current_stats=storage.shoe_storage_space.get('Stats'), new_product= product)
+        new_product_stats_helper(current_stats=storage.shoe_storage_space.get('Stats'), new_product= product)
         flag_modified(storage, 'shoe_storage_space')
         db.add(storage)
         db.commit()
     elif flip:
-        stats_helper(current_stats=storage.flips_storage_space.get('Stats'), new_product=product)
+        new_product_stats_helper(current_stats=storage.flips_storage_space.get('Stats'), new_product=product)
         flag_modified(storage, 'flips_storage_space')
         db.add(storage)
         db.commit()
@@ -205,10 +205,6 @@ def new_product_on_stats(user_id: int, db:Session, product:dict = None ,shoe: bo
     storage.shoe_storage_space['Stats']['amount_shipped']
     """
     """
-    get current stats
-        if new product added
-            add on all data onto current stats
-
         if product updated
             pop product
             get products new stats
