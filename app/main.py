@@ -78,10 +78,11 @@ def update_item_by_id(user_id:int, item_id:str, item_updating:schemas.Flips ,db:
 def update_shoe_by_id(user_id:int, shoe_id: str, shoe: schemas.Shoe, db:Session = Depends(interact_db)):
     return crud.update_shoe_item(user_id=user_id,shoe_id=shoe_id, shoe=shoe, db=db)
     
-@app.delete('/users/{user_id}/flipsstorage', response_model=list[schemas.FlipsCreation])
+@app.delete('/users/{user_id}/flipsstorage',response_model=dict)
 def delete_item(user_id:int, item_id:Union[str,None]=None, deleteAll: bool = False,db:Session= Depends(interact_db)):
     return crud.delete_item_by_itemid(user_id=user_id, item_id=item_id, deleteAllFlag=deleteAll,db=db)
 
 @app.delete('/users/{user_id}/shoestorage', response_model= list[schemas.ShoeCreation])
 def delete_item(user_id:int, shoe_id:Union[str,None]=None, deleteAll: bool = False,db:Session= Depends(interact_db)):
     return crud.delete_item_by_shoeid(user_id=user_id, shoe_id=shoe_id, deleteAllFlag=deleteAll, db=db)
+
