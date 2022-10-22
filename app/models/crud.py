@@ -58,6 +58,8 @@ def add_shoe_to_storage(user_id:int, shoe:schemas.ShoeCreation, db:Session):
     db.add(storage)
     db.commit()
 
+    new_product_on_stats(user_id=user_id, db=db, product=shoe, shoe=True)
+
     return shoe
 
 def add_flips_to_storage(user_id:int, item:schemas.FlipsCreation, db:Session):
@@ -137,7 +139,7 @@ def delete_item_by_itemid(user_id: int ,item_id: str, deleteAllFlag: bool,db:Ses
             flag_modified(storage,"flips_storage_space")
             db.add(storage)
             db.commit()
-            return storage.flips_storage_space['Flips']
+            return storage.flips_storage_space
 
 def delete_item_by_shoeid(user_id: int ,shoe_id: str, deleteAllFlag: bool ,db:Session):
     storage = get_user_storage(user_id=user_id, db=db)
@@ -148,7 +150,7 @@ def delete_item_by_shoeid(user_id: int ,shoe_id: str, deleteAllFlag: bool ,db:Se
         flag_modified(storage,'shoe_storage_space')
         db.add(storage)
         db.commit()
-        return storage.shoe_storage_space['Shoes']
+        return storage.shoe_storage_space
 
     get_shoe_item_by_id(user_id=user_id, shoe_id=shoe_id,db=db)
     for i,it in enumerate(storage.shoe_storage_space['Shoes']):
@@ -157,7 +159,7 @@ def delete_item_by_shoeid(user_id: int ,shoe_id: str, deleteAllFlag: bool ,db:Se
             flag_modified(storage,"shoe_storage_space")
             db.add(storage)
             db.commit()
-            return storage.shoe_storage_space['Shoes']
+            return storage.shoe_storage_space
     
     raise HTTPException(status_code=404, detail='Code not founds')
 
@@ -177,10 +179,8 @@ def new_product_stats_helper(current_stats:dict, new_product: dict):
     elif new_product['status'] == 'SHIPPED':
         current_stats['amount_shipped'] += new_product['quantity']
 
-
 def new_product_on_stats(user_id: int, db:Session, product:dict = None ,shoe: bool = False, flip: bool = False):
     storage = get_user_storage(user_id=user_id, db=db)
-    print(storage.flips_storage_space.get('Stats'))
 
     if shoe:
         new_product_stats_helper(current_stats=storage.shoe_storage_space.get('Stats'), new_product= product)
