@@ -14,3 +14,9 @@ def new_product_stats_helper(current_stats:dict, new_product: dict):
         current_stats['amount_shipped'] += new_product['quantity']
 
 
+def delete_product_stats_helper(current_stats:dict, old_product:dict):
+    current_stats['total_retail'] -= (old_product['retail']*old_product['quantity'])
+    current_stats['total_resell'] -= (old_product['resell']*old_product['quantity'])
+    current_stats['current_net'] = current_stats['total_resell'] - current_stats['total_retail'] 
+    current_stats['total_quantity'] -= old_product['quantity']
+    current_stats[f'amount_{old_product["status"].lower().replace(" ","_")}'] -= old_product['quantity']

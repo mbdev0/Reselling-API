@@ -55,11 +55,11 @@ def add_shoe_to_storage(user_id:int, shoe:schemas.ShoeCreation, db:Session):
     shoe = shoe.__dict__
     shoe["id"] = str(uuid.uuid4())
     storage.shoe_storage_space['Shoes'].append(shoe) 
+    new_product_on_stats(storage=storage, product=shoe, shoe=True)
     flag_modified(storage, "shoe_storage_space")
     db.add(storage)
     db.commit()
 
-    new_product_on_stats(user_id=user_id, db=db, product=shoe, shoe=True)
 
     return shoe
 
@@ -68,11 +68,11 @@ def add_flips_to_storage(user_id:int, item:schemas.FlipsCreation, db:Session):
     item = item.__dict__
     item['id'] = str(uuid.uuid4())
     storage.flips_storage_space['Flips'].append(item)
+    new_product_on_stats(storage=storage, product=item, flip=True)
     flag_modified(storage, "flips_storage_space")
     db.add(storage)
     db.commit()
 
-    new_product_on_stats(user_id=user_id, db=db, product=item, flip=True)
 
     return item
 
@@ -98,10 +98,11 @@ def update_flip_item(user_id:int, item_id: str, item: schemas.Flips, db:Session)
     storage = get_user_storage(user_id=user_id,db=db)
 
     for it in storage.flips_storage_space['Flips']:
-        print(it['id'])
         if it['id'] == item_id:
+            delete_product_stats(storage=storage, old_product=it, flip=True)
             for key,value in item.dict(exclude_unset=True).items():
                 it[key] = value
+            new_product_on_stats(storage=storage,product=it, flip=True)
             flag_modified(storage, "flips_storage_space")
             db.add(storage)
             db.commit()
@@ -114,8 +115,10 @@ def update_shoe_item(user_id:int, shoe_id: str, shoe: schemas.Shoe, db:Session):
 
     for it in storage.shoe_storage_space['Shoes']:
         if it['id'] == shoe_id:
+            delete_product_stats(storage=storage, old_product=it, shoe=True)
             for key,value in shoe.dict(exclude_unset=True).items():
                 it[key] = value
+            new_product_on_stats(storage=storage, product=it,shoe=True)
             flag_modified(storage, "shoe_storage_space")
             db.add(storage)
             db.commit()
@@ -137,6 +140,7 @@ def delete_item_by_itemid(user_id: int ,item_id: str, deleteAllFlag: bool,db:Ses
     for i,it in enumerate(storage.flips_storage_space['Flips']):
         if it['id'] == item_id:
             storage.flips_storage_space['Flips'].pop(i)
+            delete_product_stats(storage=storage, old_product=it,flip=True)
             flag_modified(storage,"flips_storage_space")
             db.add(storage)
             db.commit()
@@ -147,7 +151,6 @@ def delete_item_by_shoeid(user_id: int ,shoe_id: str, deleteAllFlag: bool ,db:Se
     if deleteAllFlag:
         storage.shoe_storage_space['Shoes'] = []
         storage.shoe_storage_space['Stats'] = schemas.StorageBase.__dict__['__fields__']['shoe_storage_space'].default['Stats']
-
         flag_modified(storage,'shoe_storage_space')
         db.add(storage)
         db.commit()
@@ -157,6 +160,7 @@ def delete_item_by_shoeid(user_id: int ,shoe_id: str, deleteAllFlag: bool ,db:Se
     for i,it in enumerate(storage.shoe_storage_space['Shoes']):
         if it['id'] == shoe_id:
             storage.shoe_storage_space['Shoes'].pop(i)
+            delete_product_stats(storage=storage, old_product=it,shoe=True)
             flag_modified(storage,"shoe_storage_space")
             db.add(storage)
             db.commit()
@@ -164,20 +168,27 @@ def delete_item_by_shoeid(user_id: int ,shoe_id: str, deleteAllFlag: bool ,db:Se
     
     raise HTTPException(status_code=404, detail='Code not founds')
 
+def delete_product_stats(storage:Storage,old_product:dict = None, shoe: bool = False, flip: bool = False):
 
-def new_product_on_stats(user_id: int, db:Session, product:dict = None ,shoe: bool = False, flip: bool = False):
-    storage = get_user_storage(user_id=user_id, db=db)
+    if flip:
+        helper.delete_product_stats_helper(storage.flips_storage_space['Stats'],old_product=old_product)
+        
+    elif shoe:
+        helper.delete_product_stats_helper(storage.shoe_storage_space['Stats'],old_product=old_product)
+
+def new_product_on_stats(storage:Storage,product:dict = None ,shoe: bool = False, flip: bool = False):
+    # storage = get_user_storage(user_id=user_id, db=db)
 
     if shoe:
         helper.new_product_stats_helper(current_stats=storage.shoe_storage_space.get('Stats'), new_product= product)
-        flag_modified(storage, 'shoe_storage_space')
-        db.add(storage)
-        db.commit()
+        # flag_modified(storage, 'shoe_storage_space')
+        # db.add(storage)
+        # db.commit()
     elif flip:
         helper.new_product_stats_helper(current_stats=storage.flips_storage_space.get('Stats'), new_product=product)
-        flag_modified(storage, 'flips_storage_space')
-        db.add(storage)
-        db.commit()
+        # flag_modified(storage, 'flips_storage_space')
+        # db.add(storage)
+        # db.commit()
     
     """
     storage.shoe_storage_space['Stats']['total_retail']
