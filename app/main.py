@@ -1,9 +1,10 @@
 from models import object_models
 from operations import crud
-from fastapi import Depends, FastAPI, HTTPException
+from fastapi import Depends, FastAPI
 from configuration.dbconfig import engine, SessionLocal
 from sqlalchemy.orm import Session
 from typing import List, Union
+from auth import auth
 
 from schemas import schemas
 
@@ -22,7 +23,7 @@ app = FastAPI()
 def response():
     return({'message':'welcome'})
 
-@app.post("/user", response_model=dict)
+@app.post("/user", response_model=schemas.User)
 def create_user(user: schemas.UserCreation, db: Session = Depends(interact_db)):
     return crud.create_user(db=db,user=user)
 
