@@ -1,10 +1,10 @@
-from pydantic import BaseModel, conint, confloat
-from typing import Union, Optional, Literal, List, Dict
+from pydantic import BaseModel, conint, confloat, EmailStr
+from typing import Union, Optional, Literal, List, TypedDict
 from uuid import UUID
 
 class UserBase(BaseModel):
     username: Union[str, None] = None
-    email: Union[str, None] = None
+    email: Union[EmailStr, None] = None
   
 class UserCreation(UserBase):
     password:str
@@ -58,8 +58,11 @@ class Storage(StorageBase):
 
 class Flips_Storage_Out(BaseModel):
     Flips:List[FlipsCreation]
-    Stats: dict[str,int]
+    Stats: TypedDict('StatsFlips',{"total_retail":int, "total_resell":int, "current_net": int, "total_quantity":int, "amount_not_listed":int, "amount_listed":int,
+            "amount_packed":int,"amount_shipped":int})
 
 class Shoes_Storage_Out(BaseModel):
     Shoes:List[ShoeCreation]
-    Stats: dict[str,int]
+    Stats: TypedDict('StatsShoes',{"total_retail":int, "total_resell":int, "current_net": int, "total_quantity":int, "amount_not_listed":int, "amount_listed":int,
+            "amount_packed":int,"amount_shipped":int})
+

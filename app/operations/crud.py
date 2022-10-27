@@ -1,4 +1,5 @@
 from schemas import schemas
+from auth import auth
 from sqlalchemy.orm import Session
 from sqlalchemy.orm.attributes import flag_modified
 from models.object_models import User, Storage
@@ -6,21 +7,6 @@ from operations import helper
 from typing import List
 from fastapi import HTTPException
 import uuid
-
-"""
-For STORAGE
-    get shoe storage x 
-    get flips storage x 
-    add an item to shoe storage x
-    add an item to flips storage x
-    update an items -> any of its dict keys e.g price, quantity, etc x
-    delete an item from storage x
-    delete an item from flips storage x
-    clear the inventory -> flips and storage -> or either or  x
-
-    get total amount of retail for shoe or flips -> or both 
-    get net profit (resell-retail) for shoe or flips -> or both 
-"""
 
 def create_storage(user_email:str,db:Session) -> Storage:
     user = get_user_by_email(user_email=user_email,db=db)
@@ -177,36 +163,11 @@ def delete_product_stats(storage:Storage,old_product:dict = None, shoe: bool = F
         helper.delete_product_stats_helper(storage.shoe_storage_space['Stats'],old_product=old_product)
 
 def new_product_on_stats(storage:Storage,product:dict = None ,shoe: bool = False, flip: bool = False):
-    # storage = get_user_storage(user_id=user_id, db=db)
 
     if shoe:
         helper.new_product_stats_helper(current_stats=storage.shoe_storage_space.get('Stats'), new_product= product)
-        # flag_modified(storage, 'shoe_storage_space')
-        # db.add(storage)
-        # db.commit()
     elif flip:
         helper.new_product_stats_helper(current_stats=storage.flips_storage_space.get('Stats'), new_product=product)
-        # flag_modified(storage, 'flips_storage_space')
-        # db.add(storage)
-        # db.commit()
-    
-    """
-    storage.shoe_storage_space['Stats']['total_retail']
-    storage.shoe_storage_space['Stats']['total_resell']
-    storage.shoe_storage_space['Stats']['current_net']
-    storage.shoe_storage_space['Stats']['shoe_quantity']
-
-    storage.shoe_storage_space['Stats']['amount_not_listed']
-    storage.shoe_storage_space['Stats']['amount_listed']
-    storage.shoe_storage_space['Stats']['amount_packed']
-    storage.shoe_storage_space['Stats']['amount_shipped']
-    """
-    """
-        if product updated
-            pop product
-            get products new stats
-            update stats 
-    """
 
 def get_stats_for_flips(user_id:int, db:Session):
     storage = get_user_storage(user_id=user_id, db=db)
@@ -239,25 +200,14 @@ def create_user(user:schemas.UserCreation, db:Session) -> dict:
         raise HTTPException(status_code=409, detail='Email already exists')
     if get_user_by_username(username=user.username, db=db):
         raise HTTPException(status_code=404, detail = 'Username already exists')
-    fake_hash = user.password+'fake_hash'
-    db_user = User(username=user.username, email=user.email,password=fake_hash)
+    passhash = auth.hash_pass(user.password)
+    db_user = User(username=user.username, email=user.email,password=passhash)
     db.add(db_user)
     db.commit()
     db.refresh(db_user)
     storage=create_storage(user_email=user.email,db=db)
 
-
-    resp= {
-        "username":db_user.username,
-        "email":db_user.email,
-        "password":db_user.password,
-        "storage": {
-            "shoe_storage_space":storage.shoe_storage_space,
-            "flips_storage_space":storage.flips_storage_space
-        }
-    }
-
-    return resp
+    return schemas.User(username=db_user.username, email=db_user.email, userid=db_user.userid)
 
 def update_user(user_id:int, db:Session, user:schemas.UserCreation) -> User:
     stored_user = get_user_by_id(user_id=user_id, db=db)
