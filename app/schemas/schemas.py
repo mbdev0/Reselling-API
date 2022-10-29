@@ -2,6 +2,13 @@ from pydantic import BaseModel, conint, confloat, EmailStr
 from typing import Union, Optional, Literal, List, TypedDict
 from uuid import UUID
 
+class Token(BaseModel):
+    access_token:str
+    token_type:str
+
+class TokenData(BaseModel):
+    username:Union[str,None] = None
+    
 class UserBase(BaseModel):
     username: Union[str, None] = None
     email: Union[EmailStr, None] = None
@@ -56,12 +63,12 @@ class Storage(StorageBase):
     class Config:
         orm_mode=True
 
-class Flips_Storage_Out(BaseModel):
+class Flips_Storage(BaseModel):
     Flips:List[FlipsCreation]
     Stats: TypedDict('StatsFlips',{"total_retail":int, "total_resell":int, "current_net": int, "total_quantity":int, "amount_not_listed":int, "amount_listed":int,
             "amount_packed":int,"amount_shipped":int})
 
-class Shoes_Storage_Out(BaseModel):
+class Shoes_Storage(BaseModel):
     Shoes:List[ShoeCreation]
     Stats: TypedDict('StatsShoes',{"total_retail":int, "total_resell":int, "current_net": int, "total_quantity":int, "amount_not_listed":int, "amount_listed":int,
             "amount_packed":int,"amount_shipped":int})
