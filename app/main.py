@@ -1,12 +1,16 @@
 from models import object_models
 from operations import crud
-from fastapi import Depends, FastAPI
+from fastapi import Depends, FastAPI, HTTPException
+from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from configuration.dbconfig import engine, SessionLocal
 from sqlalchemy.orm import Session
 from typing import List, Union
-from auth import auth
-
 from schemas import schemas
+from auth import auth 
+
+
+
+oauth2 = OAuth2PasswordBearer(tokenUrl='token')
 
 object_models.Base.metadata.create_all(bind=engine)
 
@@ -23,12 +27,16 @@ app = FastAPI()
 def response():
     return({'message':'welcome'})
 
+@app.post("/token")
+def login(formdata: OAuth2PasswordRequestForm = Depends(), db:Session = Depends(interact_db)):
+    return auth.validate_user(formdata=formdata, db=db)
+
 @app.post("/user", response_model=schemas.User)
 def create_user(user: schemas.UserCreation, db: Session = Depends(interact_db)):
     return crud.create_user(db=db,user=user)
 
 @app.get("/users", response_model=List[schemas.User])
-def get_all_users(db:Session = Depends(interact_db)):
+def get_all_users(db:Session = Depends(interact_db),token: str = Depends(oauth2)):
     return crud.get_all_users(db=db)
 
 @app.get('/user/{user_id}', response_model = schemas.User)
@@ -48,11 +56,11 @@ def get_storage_by_userid(user_id:int, db:Session = Depends(interact_db)):
     crud.get_stats_for_shoes(user_id=user_id,db=db)
     return crud.get_user_storage(user_id=user_id, db=db)
 
-@app.get('/user/{user_id}/shoestorage',response_model=schemas.Shoes_Storage_Out)
+@app.get('/user/{user_id}/shoestorage',response_model=schemas.Shoes_Storage)
 def get_shoe_storage(user_id:int, db: Session = Depends(interact_db)):
     return crud.get_shoe_storage(user_id=user_id, db=db)
 
-@app.get('/user/{user_id}/flipsstorage',response_model=schemas.Flips_Storage_Out)
+@app.get('/user/{user_id}/flipsstorage',response_model=schemas.Flips_Storage)
 def get_flips_storage(user_id:int, db: Session = Depends(interact_db)):
     return crud.get_flips_storage(user_id=user_id, db=db)
 
@@ -80,11 +88,11 @@ def update_item_by_id(user_id:int, item_id:str, item_updating:schemas.Flips ,db:
 def update_shoe_by_id(user_id:int, shoe_id: str, shoe: schemas.Shoe, db:Session = Depends(interact_db)):
     return crud.update_shoe_item(user_id=user_id,shoe_id=shoe_id, shoe=shoe, db=db)
     
-@app.delete('/users/{user_id}/flipsstorage',response_model=schemas.Flips_Storage_Out)
-def delete_item(user_id:int, item_id:Union[str,None]=None, deleteAll: bool = False,db:Session= Depends(interact_db)):
+@app.delete('/users/{user_id}/flipsstorage',response_model=schemas.Flips_Storage)
+def delete_flip(user_id:int, item_id:Union[str,None]=None, deleteAll: bool = False,db:Session= Depends(interact_db)):
     return crud.delete_item_by_itemid(user_id=user_id, item_id=item_id, deleteAllFlag=deleteAll,db=db)
 
-@app.delete('/users/{user_id}/shoestorage', response_model= schemas.Shoes_Storage_Out)
-def delete_item(user_id:int, shoe_id:Union[str,None]=None, deleteAll: bool = False,db:Session= Depends(interact_db)):
+@app.delete('/users/{user_id}/shoestorage', response_model= schemas.Shoes_Storage)
+def delete_shoe(user_id:int, shoe_id:Union[str,None]=None, deleteAll: bool = False,db:Session= Depends(interact_db)):
     return crud.delete_item_by_shoeid(user_id=user_id, shoe_id=shoe_id, deleteAllFlag=deleteAll, db=db)
 
