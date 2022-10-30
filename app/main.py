@@ -18,7 +18,7 @@ app = FastAPI()
 def response():
     return({'message':'welcome'})
 
-@app.post("/token", response_model=schemas.Token)
+@app.post("/token", response_model=schemas.Token, tags=['Token'])
 def login(formdata: OAuth2PasswordRequestForm = Depends(), db:Session = Depends(interact_db)):
     user = auth.validate_user(formdata=formdata, db=db)
     if not user:
@@ -30,11 +30,11 @@ def login(formdata: OAuth2PasswordRequestForm = Depends(), db:Session = Depends(
     access_token = auth.create_acess_token({'sub':user.username},expiry_delta=timedelta(minutes=authconfig.ACCESS_TOKEN_EXPIRY_MINS))
     return schemas.Token(access_token=access_token,token_type='Bearer')
 
-@app.post("/user", response_model=schemas.User)
+@app.post("/user", response_model=schemas.User, tags=['User'])
 def create_user(user: schemas.UserCreation, db: Session = Depends(interact_db)):
     return crud.create_user(db=db,user=user)
 
-@app.get("/users", response_model=List[schemas.User])
+@app.get("/users", response_model=List[schemas.User], tags=['User'])
 def get_all_users(
     db:Session = Depends(interact_db),
     currUser = Depends(auth.current_user)):
@@ -44,7 +44,7 @@ def get_all_users(
     
     raise HTTPException(status_code=401, detail='Unauthorized',headers={'WWW-Authenticate':'Bearer'})
 
-@app.get('/user/{username}', response_model = schemas.User)
+@app.get('/{username}', response_model = schemas.User, tags=['User'])
 def get_user_by_id(username:str,currUser: schemas.User = Depends(auth.current_user) ,db: Session = Depends(interact_db)):
 
     if currUser.superuser:
@@ -53,7 +53,7 @@ def get_user_by_id(username:str,currUser: schemas.User = Depends(auth.current_us
     auth.check_if_currUser(currUser=currUser, username=username)
     return crud.get_user_by_username(username=username, db=db)
 
-@app.patch('/user/{username}', response_model=schemas.User)
+@app.patch('/{username}', response_model=schemas.User, tags=['User'])
 def update_user(
     username: str, 
     user: schemas.UserCreation, 
@@ -65,7 +65,7 @@ def update_user(
     auth.check_if_currUser(currUser=currUser, username=username)
     return crud.update_user(username=username, user=user, db=db)
 
-@app.delete('/user/{username}',response_model=dict)
+@app.delete('/{username}',response_model=dict, tags=['User'])
 def delete_user_by_username(
     username:str,
     currUser:schemas.User = Depends(auth.current_user),
@@ -77,7 +77,7 @@ def delete_user_by_username(
     auth.check_if_currUser(currUser=currUser, username=username)
     return crud.delete_user_by_username(username=username, db=db)
 
-@app.get('/user/{username}/storage', response_model = schemas.Storage)
+@app.get('/{username}/storage', response_model = schemas.Storage, tags=['Storage'])
 def get_storage_by_username(
     username:str,
     currUser:schemas.User = Depends(auth.current_user),
@@ -89,7 +89,7 @@ def get_storage_by_username(
     auth.check_if_currUser(currUser=currUser, username=username)
     return crud.get_user_storage(username=username, db=db)
 
-@app.get('/user/{username}/shoestorage',response_model=schemas.Shoes_Storage)
+@app.get('/{username}/shoestorage',response_model=schemas.Shoes_Storage, tags=['Shoe Storage'])
 def get_shoe_storage(
     username:str,
     currUser:schemas.User = Depends(auth.current_user),
@@ -101,7 +101,7 @@ def get_shoe_storage(
     auth.check_if_currUser(currUser=currUser, username=username)
     return crud.get_shoe_storage(username=username, db=db)
 
-@app.get('/user/{username}/flipsstorage',response_model=schemas.Flips_Storage)
+@app.get('/{username}/flipsstorage',response_model=schemas.Flips_Storage, tags=['Flips Storage'])
 def get_flips_storage(
     username:str,
     currUser:schemas.User = Depends(auth.current_user),
@@ -113,7 +113,7 @@ def get_flips_storage(
     auth.check_if_currUser(currUser=currUser, username=username)
     return crud.get_flips_storage(username=username, db=db)
 
-@app.post('/user/{username}/shoestorage', response_model=schemas.ShoeCreation)
+@app.post('/{username}/shoestorage', response_model=schemas.ShoeCreation, tags=['Shoe Storage'])
 def add_shoe(
     username:str,
     shoe:schemas.Shoe,
@@ -126,7 +126,7 @@ def add_shoe(
     auth.check_if_currUser(currUser=currUser, username=username)
     return crud.add_shoe_to_storage(username=username, shoe=shoe, db=db)
 
-@app.post('/user/{username}/flipsstorage', response_model=schemas.FlipsCreation)
+@app.post('/{username}/flipsstorage', response_model=schemas.FlipsCreation, tags=['Flips Storage'])
 def add_flip(
     username:str, 
     flip:schemas.Flips,
@@ -139,7 +139,7 @@ def add_flip(
     auth.check_if_currUser(currUser=currUser,username=username)
     return crud.add_flips_to_storage(username=username, item=flip, db=db)
 
-@app.get("/user/{username}/flipstorage/{item_id}", response_model = schemas.FlipsCreation)
+@app.get("/{username}/flipstorage/{item_id}", response_model = schemas.FlipsCreation, tags= ['Flips Storage'])
 def get_flips_storage_item(
     username:str,
     item_id:str, 
@@ -152,7 +152,7 @@ def get_flips_storage_item(
     auth.check_if_currUser(currUser=currUser, username=username)
     return crud.get_flip_item_by_id(username=username,item_id=item_id,db=db)
 
-@app.get("/user/{username}/shoestorage/{shoe_id}", response_model=schemas.ShoeCreation)
+@app.get("/{username}/shoestorage/{shoe_id}", response_model=schemas.ShoeCreation, tags=['Shoe Storage'])
 def get_shoe_storage_item(
     username:str,
     shoe_id:str,
@@ -165,7 +165,7 @@ def get_shoe_storage_item(
     auth.check_if_currUser(currUser=currUser,username=username)
     return crud.get_shoe_item_by_id(username=username, shoe_id=shoe_id, db=db)
 
-@app.patch("/users/{username}/flipsstorage/{item_id}", response_model=schemas.FlipsCreation)
+@app.patch("/{username}/flipsstorage/{item_id}", response_model=schemas.FlipsCreation, tags=['Flips Storage'])
 def update_item_by_id(
     username:str, 
     item_id:str, 
@@ -179,7 +179,7 @@ def update_item_by_id(
     auth.check_if_currUser(currUser=currUser, username=username)
     return crud.update_flip_item(username=username,item_id=item_id, item=item_updating, db=db)
 
-@app.patch("/users/{username}/shoestorage/{shoe_id}", response_model=schemas.ShoeCreation)
+@app.patch("/{username}/shoestorage/{shoe_id}", response_model=schemas.ShoeCreation, tags=['Shoe Storage'])
 def update_shoe_by_id(
     username:str, 
     shoe_id: str, 
@@ -193,7 +193,7 @@ def update_shoe_by_id(
     auth.check_if_currUser(currUser=currUser, username=username)
     return crud.update_shoe_item(username=username,shoe_id=shoe_id, shoe=shoe, db=db)
     
-@app.delete('/users/{username}/flipsstorage',response_model=schemas.Flips_Storage)
+@app.delete('/{username}/flipsstorage',response_model=schemas.Flips_Storage, tags=['Flips Storage'])
 def delete_flip(
     username:str, 
     item_id:Union[str,None]=None, 
@@ -207,14 +207,14 @@ def delete_flip(
     auth.check_if_currUser(currUser=currUser, username=username)
     return crud.delete_item_by_itemid(username=username, item_id=item_id, deleteAllFlag=deleteAll,db=db)
 
-@app.delete('/users/{username}/shoestorage', response_model= schemas.Shoes_Storage)
+@app.delete('/{username}/shoestorage', response_model= schemas.Shoes_Storage, tags=['Shoe Storage'])
 def delete_shoe(
     username:str, 
     shoe_id:Union[str,None]=None, 
     deleteAll: bool = False,
     currUser:schemas.User = Depends(auth.current_user),
     db:Session= Depends(interact_db)):
-    
+
     if currUser.superuser:
         return crud.delete_item_by_shoeid(username=username, shoe_id=shoe_id, deleteAllFlag=deleteAll, db=db)
 
