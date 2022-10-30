@@ -14,7 +14,7 @@ class UserBase(BaseModel):
     email: Union[EmailStr, None] = None
   
 class UserCreation(UserBase):
-    password:str
+    password:Union[str, None] = None
 
     class Config:
         orm_mode=True

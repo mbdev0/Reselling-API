@@ -55,6 +55,7 @@ def validate_user(formdata:OAuth2PasswordRequestForm,db:Session):
 
 def check_if_currUser(currUser, username):
     if currUser.username != username:
+        print(currUser.username, username)
         raise HTTPException(
             status_code=401,
             detail='Unauthorized',
