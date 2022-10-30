@@ -203,7 +203,7 @@ def create_user(user:schemas.UserCreation, db:Session) -> dict:
     if get_user_by_username(username=user.username, db=db):
         raise HTTPException(status_code=409, detail = 'Username already exists')
     passhash = auth.hash_pass(user.password)
-    db_user = User(username=user.username, email=user.email,password=passhash)
+    db_user = User(userid=str(uuid.uuid4()),username=user.username, email=user.email,password=passhash)
     db.add(db_user)
     db.commit()
     db.refresh(db_user)
