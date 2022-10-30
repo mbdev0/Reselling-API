@@ -20,7 +20,7 @@ class UserCreation(UserBase):
         orm_mode=True
             
 class User(UserBase):
-    userid: Union[str, None] = None
+    userid: UUID
 
     class Config:
         orm_mode=True
