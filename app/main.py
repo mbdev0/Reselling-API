@@ -35,11 +35,21 @@ def create_user(user: schemas.UserCreation, db: Session = Depends(interact_db)):
     return crud.create_user(db=db,user=user)
 
 @app.get("/users", response_model=List[schemas.User])
-def get_all_users(db:Session = Depends(interact_db),token: str = Depends(auth.oauth2)):
-    return crud.get_all_users(db=db)
+def get_all_users(
+    db:Session = Depends(interact_db),
+    currUser = Depends(auth.current_user)):
+
+    if currUser.superuser:
+        return crud.get_all_users(db=db)
+    
+    raise HTTPException(status_code=401, detail='Unauthorized',headers={'WWW-Authenticate':'Bearer'})
 
 @app.get('/user/{username}', response_model = schemas.User)
 def get_user_by_id(username:str,currUser: schemas.User = Depends(auth.current_user) ,db: Session = Depends(interact_db)):
+
+    if currUser.superuser:
+        return crud.get_user_by_username(username=username, db=db)
+
     auth.check_if_currUser(currUser=currUser, username=username)
     return crud.get_user_by_username(username=username, db=db)
 
@@ -49,6 +59,9 @@ def update_user(
     user: schemas.UserCreation, 
     currUser:schemas.User = Depends(auth.current_user),
     db: Session = Depends(interact_db)):
+
+    if currUser.superuser:
+        return crud.update_user(username=username, user=user, db=db)
     auth.check_if_currUser(currUser=currUser, username=username)
     return crud.update_user(username=username, user=user, db=db)
 
@@ -57,6 +70,10 @@ def delete_user_by_username(
     username:str,
     currUser:schemas.User = Depends(auth.current_user),
     db: Session = Depends(interact_db)):
+
+    if currUser.superuser:
+        return crud.delete_user_by_username(username=username, db=db)
+
     auth.check_if_currUser(currUser=currUser, username=username)
     return crud.delete_user_by_username(username=username, db=db)
 
@@ -65,6 +82,10 @@ def get_storage_by_username(
     username:str,
     currUser:schemas.User = Depends(auth.current_user),
     db:Session = Depends(interact_db)):
+
+    if currUser.superuser:
+        return crud.get_user_storage(username=username, db=db)
+
     auth.check_if_currUser(currUser=currUser, username=username)
     return crud.get_user_storage(username=username, db=db)
 
@@ -73,6 +94,10 @@ def get_shoe_storage(
     username:str,
     currUser:schemas.User = Depends(auth.current_user),
     db: Session = Depends(interact_db)):
+
+    if currUser.superuser:
+        return crud.get_shoe_storage(username=username, db=db)
+
     auth.check_if_currUser(currUser=currUser, username=username)
     return crud.get_shoe_storage(username=username, db=db)
 
@@ -81,7 +106,10 @@ def get_flips_storage(
     username:str,
     currUser:schemas.User = Depends(auth.current_user),
     db: Session = Depends(interact_db)):
-    print(currUser.username, username)
+
+    if currUser.superuser:
+        return crud.get_flips_storage(username=username, db=db)
+
     auth.check_if_currUser(currUser=currUser, username=username)
     return crud.get_flips_storage(username=username, db=db)
 
@@ -91,6 +119,10 @@ def add_shoe(
     shoe:schemas.Shoe,
     currUser:schemas.User = Depends(auth.current_user),
     db: Session = Depends(interact_db)):
+
+    if currUser.superuser:
+        return crud.add_shoe_to_storage(username=username, shoe=shoe, db=db)
+
     auth.check_if_currUser(currUser=currUser, username=username)
     return crud.add_shoe_to_storage(username=username, shoe=shoe, db=db)
 
@@ -100,6 +132,10 @@ def add_flip(
     flip:schemas.Flips,
     currUser:schemas.User = Depends(auth.current_user),
     db: Session = Depends(interact_db)):
+
+    if currUser.superuser:
+        return crud.add_flips_to_storage(username=username, item=flip, db=db)
+
     auth.check_if_currUser(currUser=currUser,username=username)
     return crud.add_flips_to_storage(username=username, item=flip, db=db)
 
@@ -109,6 +145,10 @@ def get_flips_storage_item(
     item_id:str, 
     currUser:schemas.User = Depends(auth.current_user),
     db: Session = Depends(interact_db)):
+
+    if currUser.superuser:
+        return crud.get_flip_item_by_id(username=username,item_id=item_id,db=db)
+
     auth.check_if_currUser(currUser=currUser, username=username)
     return crud.get_flip_item_by_id(username=username,item_id=item_id,db=db)
 
@@ -118,6 +158,10 @@ def get_shoe_storage_item(
     shoe_id:str,
     currUser:schemas.User = Depends(auth.current_user),
     db: Session = Depends(interact_db)):
+
+    if currUser.superuser:
+        return crud.get_shoe_item_by_id(username=username, shoe_id=shoe_id, db=db)
+
     auth.check_if_currUser(currUser=currUser,username=username)
     return crud.get_shoe_item_by_id(username=username, shoe_id=shoe_id, db=db)
 
@@ -128,6 +172,10 @@ def update_item_by_id(
     item_updating:schemas.Flips,
     currUser:schemas.User = Depends(auth.current_user),
     db:Session = Depends(interact_db)):
+
+    if currUser.superuser:
+        return crud.update_flip_item(username=username,item_id=item_id, item=item_updating, db=db)
+
     auth.check_if_currUser(currUser=currUser, username=username)
     return crud.update_flip_item(username=username,item_id=item_id, item=item_updating, db=db)
 
@@ -138,6 +186,10 @@ def update_shoe_by_id(
     shoe: schemas.Shoe,
     currUser:schemas.User = Depends(auth.current_user),
     db:Session = Depends(interact_db)):
+
+    if currUser.superuser:
+        return crud.update_shoe_item(username=username,shoe_id=shoe_id, shoe=shoe, db=db)
+
     auth.check_if_currUser(currUser=currUser, username=username)
     return crud.update_shoe_item(username=username,shoe_id=shoe_id, shoe=shoe, db=db)
     
@@ -148,6 +200,10 @@ def delete_flip(
     deleteAll: bool = False,
     currUser:schemas.User = Depends(auth.current_user),
     db:Session= Depends(interact_db)):
+
+    if currUser.superuser:
+        return crud.delete_item_by_itemid(username=username, item_id=item_id, deleteAllFlag=deleteAll,db=db)
+
     auth.check_if_currUser(currUser=currUser, username=username)
     return crud.delete_item_by_itemid(username=username, item_id=item_id, deleteAllFlag=deleteAll,db=db)
 
@@ -158,6 +214,10 @@ def delete_shoe(
     deleteAll: bool = False,
     currUser:schemas.User = Depends(auth.current_user),
     db:Session= Depends(interact_db)):
+    
+    if currUser.superuser:
+        return crud.delete_item_by_shoeid(username=username, shoe_id=shoe_id, deleteAllFlag=deleteAll, db=db)
+
     auth.check_if_currUser(currUser=currUser, username=username)
     return crud.delete_item_by_shoeid(username=username, shoe_id=shoe_id, deleteAllFlag=deleteAll, db=db)
 

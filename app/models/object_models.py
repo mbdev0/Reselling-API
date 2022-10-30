@@ -1,4 +1,4 @@
-from sqlalchemy import Column, ForeignKey, Integer, String, JSON
+from sqlalchemy import Column, ForeignKey, Integer, String, JSON, Boolean
 from sqlalchemy.orm import relationship
 from configuration.dbconfig import Base
 
@@ -9,6 +9,7 @@ class User(Base):
     username = Column(String, unique = True, index=True)
     email = Column(String, unique=True, index=True)
     password = Column(String)
+    superuser = Column(Boolean, default= False)
 
     storage = relationship("Storage", backref = 'users',uselist=False, cascade = 'all,delete,delete-orphan')
 
