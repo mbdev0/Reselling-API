@@ -58,7 +58,7 @@ class StorageBase(BaseModel):
 
 class Storage(StorageBase):
     storageId:int
-    userid:int
+    userid:UUID
 
     class Config:
         orm_mode=True
