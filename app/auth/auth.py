@@ -35,6 +35,7 @@ def current_user(db: Session = Depends(interact_db) ,token:str = Depends(oauth2)
         tokendata = schemas.TokenData(username=username)
     except JWTError:
         raise login_data_exception
+    print(tokendata)
     user = crud.get_user_by_username(username=tokendata.username, db=db)
     return user
     
