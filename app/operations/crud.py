@@ -1,9 +1,10 @@
 from schemas import schemas
 from auth import auth
-from sqlalchemy.orm import Session
-from sqlalchemy.orm.attributes import flag_modified
 from models.object_models import User, Storage
 from operations import helper
+
+from sqlalchemy.orm import Session
+from sqlalchemy.orm.attributes import flag_modified
 from typing import List
 from fastapi import HTTPException
 import uuid
@@ -182,14 +183,23 @@ def get_stats_for_shoes(username:str, db:Session):
 def get_user_by_id(user_id:int,db:Session) -> User:
     get_by_id = db.query(User).filter(User.userid==user_id).first()
     if get_by_id is None:
-        raise HTTPException(status_code = 404, detail= f'No user was found with the id: {user_id}')
+        raise HTTPException(status_code=404, detail= f'User not found with the userid: {user_id}')
+
     return get_by_id
 
 def get_user_by_email(user_email:str, db:Session) -> User:
-    return db.query(User).filter(User.email==user_email).first()
+    get_by_email = db.query(User).filter(User.email==user_email).first()
+    if get_by_email is None:
+        raise HTTPException(status_code=404, detail= f'User not found with the email: {user_email}')
+
+    return get_by_email
 
 def get_user_by_username(username:str, db:Session) -> User:
-    return db.query(User).filter(User.username==username).first()
+    get_by_username = db.query(User).filter(User.username==username).first()
+    if get_by_username is None:
+        raise HTTPException(status_code=404, detail= f'User not found with the username: {username}')
+
+    return get_by_username
 
 def get_all_users(db:Session) -> List[User]:
     get_users = db.query(User).all()
@@ -198,9 +208,9 @@ def get_all_users(db:Session) -> List[User]:
     return get_users
 
 def create_user(user:schemas.UserCreation, db:Session) -> dict:
-    if get_user_by_email(user_email=user.email, db=db):
+    if db.query(User).filter(User.email==user.email).first():
         raise HTTPException(status_code=409, detail='Email already exists')
-    if get_user_by_username(username=user.username, db=db):
+    if db.query(User).filter(User.username==user.username).first():
         raise HTTPException(status_code=409, detail = 'Username already exists')
     passhash = auth.hash_pass(user.password)
     db_user = User(userid=str(uuid.uuid4()),username=user.username, email=user.email,password=passhash)
@@ -216,10 +226,10 @@ def update_user(username:str, db:Session, user:schemas.UserCreation) -> User:
     user_update = user.dict(exclude_unset=True)
     for key,value in user_update.items():
         if key=='email':
-            if get_user_by_email(user_email=value, db=db):
+            if db.query(User).filter(User.email==user.email).first():
                 raise HTTPException(status_code=409, detail='Email already exists')
         if key == 'username':
-            if get_user_by_username(username=value, db=db):
+            if db.query(User).filter(User.username==user.username).first():
                 raise HTTPException(status_code=409, detail = 'Username already exists')
 
         if key == 'password':
