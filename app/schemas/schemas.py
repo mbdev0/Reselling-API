@@ -57,7 +57,7 @@ class StorageBase(BaseModel):
         }
 
 class Storage(StorageBase):
-    storageId:int
+    storageId:UUID
     userid:UUID
 
     class Config:

@@ -11,8 +11,13 @@ import uuid
 
 def create_storage(user_email:str,db:Session) -> Storage:
     user = get_user_by_email(user_email=user_email,db=db)
-    db_storage = Storage(shoe_storage_space=schemas.StorageBase.__fields__['shoe_storage_space'].default
-    ,flips_storage_space=schemas.StorageBase.__fields__['flips_storage_space'].default,userid=user.userid)
+    db_storage = Storage(
+    storageId = str(uuid.uuid4()),
+    shoe_storage_space=schemas.StorageBase.__fields__['shoe_storage_space'].default,
+    flips_storage_space=schemas.StorageBase.__fields__['flips_storage_space'].default,
+    userid=user.userid
+    )
+    print(db_storage)
     db.add(db_storage)
     db.commit()
     db.refresh(db_storage)
