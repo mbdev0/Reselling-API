@@ -23,7 +23,6 @@ platformdirs==2.5.2
 pyasn1==0.4.8
 pycparser==2.21
 pydantic==1.10.2
-pygame==2.1.2
 pyOpenSSL==22.0.0
 PySocks==1.7.1
 python-dotenv==0.21.0
