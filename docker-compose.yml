@@ -1,0 +1,15 @@
+version: '2.12.2'
+
+services:
+  api:
+    image: mbdev0/reselling-api:0.2-amd64
+    restart: on-failure
+
+  nginx:
+    image: nginx:latest
+    volumes:
+      - ./nginx:/etc/nginx/conf.d
+    depends_on:
+      - api
+    ports:
+      - 80:80
