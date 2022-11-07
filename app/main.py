@@ -7,6 +7,7 @@ from configuration.limiter import *
 
 from datetime import timedelta
 from fastapi import Depends, FastAPI, HTTPException
+from fastapi.responses import RedirectResponse
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
 from starlette.requests import Request
@@ -20,7 +21,7 @@ app.include_router(users.router)
 @app.get("/")
 @limiter.limit("30/minute")
 def response(request:Request):
-    return({'message':'welcome'})
+    return RedirectResponse("/docs")
 
 @app.post("/token", response_model=schemas.Token, tags=['Token'])
 def login(formdata: OAuth2PasswordRequestForm = Depends(), db:Session = Depends(interact_db)):
